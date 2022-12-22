@@ -4,6 +4,8 @@ This is a handy-dandy CLI for when you don't know wtf to do.
 
 Instead of furiously grepping through man pages, simply use `do`, and have GPT-3 do all the magic for you.
 
+[![asciicast](https://asciinema.org/a/oXRkVfVsxvUFq4SFjrstgsZck.png)](https://asciinema.org/a/oXRkVfVsxvUFq4SFjrstgsZck?i=0.5&autoplay=1)
+
 ## Installation
 
 We recommend using [`pipx`](https://pypa.github.io/pipx/):
