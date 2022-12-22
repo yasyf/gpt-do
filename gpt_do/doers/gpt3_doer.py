@@ -29,7 +29,7 @@ class GPT3Doer(Doer):
         contents = openai.Completion.create(
             engine=self.__class__.model,
             prompt=f"{self.prompt}\nRequest: {prompt}\n{{",
-            stop="}",
+            stop="}\n",
             temperature=0,
             max_tokens=256,
         )
