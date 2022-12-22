@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "gpt-do"
-version = "0.1.10"
+version = "0.1.11"
 description = "GPT-powered bash commands."
 authors = ["Yasyf Mohamedali <yasyfm@gmail.com>"]
 license = "MIT"
@@ -21,6 +21,7 @@ black = "==22.*,>=22.12.0"
 
 [tool.poetry.scripts]
 do = 'gpt_do.cli:do'
+ddo = 'gpt_do.cli:do'
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
