@@ -1,16 +1,19 @@
 import click
 
-from gpt_do.doers.gpt3_doer import GPT3Doer
-from gpt_do.doers.pywright_doer import PywrightDoer
-
 
 def get_doer(model):
     if model == "chatgpt":
+        from gpt_do.doers.pywright_doer import PywrightDoer
+
         return PywrightDoer
     elif model == "gpt3":
+        from gpt_do.doers.gpt3_doer import GPT3Doer
+
         GPT3Doer.model = "text-davinci-003"
         return GPT3Doer
     elif model == "codex":
+        from gpt_do.doers.gpt3_doer import GPT3Doer
+
         GPT3Doer.model = "code-davinci-002"
         return GPT3Doer
     else:
