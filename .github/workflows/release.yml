@@ -19,7 +19,7 @@ jobs:
           python-version: "3.9"
 
       - name: Install Poetry
-        run: python install-poetry.py -y
+        run: pip install poetry
 
       - name: Update PATH
         run: echo "$HOME/.local/bin" >> $GITHUB_PATH
