@@ -4,6 +4,8 @@ This is a handy-dandy CLI for when you don't know wtf to do.
 
 Instead of furiously grepping through man pages, simply use `do` (or `ddo` if on `bash`/`zsh`), and have GPT-3 do all the magic for you.
 
+Check out the blog post [here](https://musings.yasyf.com/never-write-a-bash-command-again-with-gpt-3/).
+
 ## Demo
 
 Click to play:
@@ -17,13 +19,23 @@ We recommend using [`pipx`](https://pypa.github.io/pipx/):
 ```console
 $ pipx install gpt-do
 $ which do
+~/.local/bin/do
 ```
 
-However you can also use `pip`:
+However you can also use `brew`:
+
+```console
+$ brew install yasyf/do/do
+$ which do
+/opt/homebrew/bin/do
+```
+
+Or `pip`:
 
 ```console
 $ pip install gpt-do
 $ which do
+~/.asdf/installs/python/3.11.0/bin/do
 ```
 
 ## Usage
