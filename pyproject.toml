@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "gpt-do"
-version = "0.1.2"
+version = "0.1.3"
 description = "GPT-powered bash commands."
 authors = ["Yasyf Mohamedali <yasyfm@gmail.com>"]
 license = "MIT"
