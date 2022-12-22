@@ -8,6 +8,8 @@ from pathlib import Path
 from textwrap import dedent
 from typing import Any, Literal, Union, overload
 
+import click
+import yaml
 from retry import retry
 
 
@@ -90,10 +92,11 @@ class Doer(ABC):
             return resp
 
         try:
-            resp = json.loads(resp)
-        except json.decoder.JSONDecodeError:
+            # Use YAML as it is more permissive
+            resp = yaml.parse(resp)
+        except Exception:
             self.dprint(resp)
-            raise
+            raise click.UsageError("GPT returned an invalid response. Try again?")
 
         return resp
 
