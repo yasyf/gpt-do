@@ -2,7 +2,7 @@
 
 This is a handy-dandy CLI for when you don't know wtf to do.
 
-Instead of furiously grepping through man pages, simply use `do`, and have GPT-3 do all the magic for you.
+Instead of furiously grepping through man pages, simply use `do` (or `ddo` if on `bash`/`zsh`), and have GPT-3 do all the magic for you.
 
 ## Demo
 
@@ -26,10 +26,9 @@ $ pip install gpt-do
 $ which do
 ```
 
-```
 ## Usage
 
-*n.b.* If you're on `bash` or `zsh`, `do` is a reserved keyword, so you'll have to use the alias `ddo`.
+**n.b.** If you're on `bash` or `zsh`, `do` is a reserved keyword, so you'll have to use the alias `ddo`.
 
 
 ```console
