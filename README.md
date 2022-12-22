@@ -29,6 +29,9 @@ $ which do
 ```
 ## Usage
 
+*n.b.* If you're on `bash` or `zsh`, `do` is a reserved keyword, so you'll have to use the alias `ddo`.
+
+
 ```console
 $ export OPENAI_API_KEY=xxx # stick this in your bash_profile
 $ do amend the message of my last commit to "It works!"
