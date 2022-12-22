@@ -9,7 +9,7 @@ from textwrap import dedent
 from typing import Any, Literal, Union, overload
 
 import click
-import yaml
+import dirtyjson
 from retry import retry
 
 
@@ -92,8 +92,7 @@ class Doer(ABC):
             return resp
 
         try:
-            # Use YAML as it is more permissive
-            resp = yaml.parse(resp)
+            resp = dirtyjson.loads(resp)
         except Exception:
             self.dprint(resp)
             raise click.UsageError("GPT returned an invalid response. Try again?")
