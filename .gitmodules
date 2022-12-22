@@ -1,3 +1,3 @@
-[submodule "do/vendor/chatgpt_wrapper"]
-	path = do/vendor/chatgpt_wrapper
+[submodule "gpt_do/vendor/chatgpt_wrapper"]
+	path = gpt_do/vendor/chatgpt_wrapper
 	url = https://github.com/mmabrouk/chatgpt-wrapper

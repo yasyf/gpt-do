@@ -21,13 +21,14 @@ class Doer(ABC):
         You should respond with the following JSON object.
 
         {{
-            "commands" : ["command", "command", ...],
-            "explanation" : "explanation",
+            "commands" : ["ls", "cat", ...],
+            "explanation" : "These commands will...",
         }}
 
         Do not respond with anything other than this JSON. Your response should be valid JSON. Do not include any notes.
 
         The explanation must be at most one sentence, and cannot contain any other commands.
+        The explanation should help the user understand what the commands are going to do.
         If the request would require multiple commands, respond with all the required commands in the array.
     """
     )

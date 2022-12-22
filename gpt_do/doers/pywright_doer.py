@@ -1,7 +1,7 @@
 from chatgpt_wrapper import ChatGPT
 
-from do.doers.doer import Doer
-from do.vendor.chatgpt_wrapper.chatgpt_wrapper import ChatGPT
+from gpt_do.doers.doer import Doer
+from gpt_do.vendor.chatgpt_wrapper.chatgpt_wrapper import ChatGPT
 
 
 class PywrightDoer(Doer):

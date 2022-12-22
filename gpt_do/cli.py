@@ -1,10 +1,7 @@
-import atexit
-import os
-
 import click
 
-from do.doers.gpt3_doer import GPT3Doer
-from do.doers.pywright_doer import PywrightDoer
+from gpt_do.doers.gpt3_doer import GPT3Doer
+from gpt_do.doers.pywright_doer import PywrightDoer
 
 
 def get_doer(model):
@@ -23,6 +20,7 @@ def get_doer(model):
 @click.command()
 @click.argument("request", required=True, nargs=-1)
 @click.option("--debug", is_flag=True)
+@click.option("--yes", "-y", is_flag=True, help="Do not ask for confirmation")
 @click.option(
     "--model",
     default="gpt3",
@@ -31,13 +29,13 @@ def get_doer(model):
         case_sensitive=False,
     ),
 )
-def do(request: str, debug: bool, model: str):
+def do(request: str, debug: bool, yes: bool, model: str):
     """Fetches and executes commands in your shell based on the advice of GPT3."""
     do = get_doer(model)(debug=debug)
     response = do.query(" ".join(request))
-    click.echo(click.style("\n".join(response["commands"]), fg="green"))
     click.echo(click.style(response["explanation"], bold=True))
-    if click.confirm("Do you want to continue?"):
+    click.echo(click.style("\n".join(response["commands"]), fg="green"))
+    if yes or click.confirm("Do you want to continue?"):
         do.execute(response["commands"])
 
 
