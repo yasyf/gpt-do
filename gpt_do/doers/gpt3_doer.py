@@ -35,3 +35,10 @@ class GPT3Doer(Doer):
         )
         self.dprint(contents)
         return "{" + contents.choices[0]["text"] + "}"
+
+    def check_cache(self, key):
+        return self.state.get("cache", {}).get(f"{self.model}:{key}")
+
+    def update_cache(self, key, value):
+        cache = self.state["cache"] = self.state.get("cache", {})
+        cache[f"{self.model}:{key}"] = value
