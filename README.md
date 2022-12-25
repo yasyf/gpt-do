@@ -42,6 +42,7 @@ $ which do
 
 **n.b.** If you're on `bash` or `zsh`, `do` is a reserved keyword, so you'll have to use the alias `ddo`.
 
+**n.b.** The default model used is **GPT-3**. Please ensure you have sufficient credits in your OpenAI account to use it.
 
 ```console
 $ export OPENAI_API_KEY=xxx # stick this in your bash_profile
