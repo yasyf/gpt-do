@@ -38,7 +38,7 @@ def do(request: str, debug: bool, yes: bool, model: str):
     response = do.query(" ".join(request))
     click.echo(click.style(response["explanation"], bold=True))
     click.echo(click.style("\n".join(response["commands"]), fg="green"))
-    if yes or click.confirm("Do you want to continue?"):
+    if len(response["commands"]) > 0 and (yes or click.confirm("Do you want to continue?")):
         do.execute(response["commands"])
 
 
