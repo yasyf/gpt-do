@@ -37,6 +37,8 @@ def do(request: str, debug: bool, yes: bool, model: str):
     do = get_doer(model)(debug=debug)
     response = do.query(" ".join(request))
     click.echo(click.style(response["explanation"], bold=True))
+    if not response["commands"]:
+        return
     click.echo(click.style("\n".join(response["commands"]), fg="green"))
     if yes or click.confirm("Do you want to continue?"):
         do.execute(response["commands"])
