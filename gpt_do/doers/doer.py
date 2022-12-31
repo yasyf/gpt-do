@@ -121,4 +121,4 @@ class Doer(ABC):
         f = tempfile.NamedTemporaryFile(suffix=f".{self.shell}")
         f.write("\n".join(commands).encode("utf-8"))
         f.flush()
-        os.execl(self.shell_path, "-c", f.name)
+        os.execl(self.shell_path, "-lc", f.name)
