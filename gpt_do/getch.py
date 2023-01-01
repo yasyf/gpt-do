@@ -7,13 +7,19 @@ def _getch():
     import getch
 
     def _confirm():
-        ch = getch.getch()
-        if ch.isalpha():
-            click.echo(ch)
-            return ch
-        else:
-            click.echo("")
-            return None
+        skip = False
+
+        while ch := getch.getch():
+            if skip:
+                skip = False
+            elif ch.isalnum():
+                click.echo(ch)
+                return ch
+            elif ch.isspace():
+                click.echo("")
+                return None
+            elif ch == "[":
+                skip = True
 
     return _confirm
 
@@ -66,7 +72,7 @@ def _click():
 
 
 def get_confirm() -> Callable:
-    for func in (_getch, _pynput, _click):
+    for func in (_pynput, _getch, _click):
         try:
             return func()
         except:
