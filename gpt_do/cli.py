@@ -1,5 +1,7 @@
 import click
 
+from gpt_do.getch import get_confirm
+
 
 def get_doer(model):
     if model == "chatgpt":
@@ -18,6 +20,16 @@ def get_doer(model):
         return GPT3Doer
     else:
         raise ValueError(f"Unknown model {model}")
+
+
+_confirm = get_confirm()
+
+
+def confirm(prompt):
+    click.echo(f"{prompt} [Y/n]: ", nl=False)
+    if resp := _confirm():
+        return resp.lower() == "y"
+    return True
 
 
 @click.command()
@@ -40,7 +52,7 @@ def do(request: str, debug: bool, yes: bool, model: str):
     if not response["commands"]:
         return
     click.echo(click.style("\n".join(response["commands"]), fg="green"))
-    if yes or click.confirm("Do you want to continue?"):
+    if yes or confirm("Execute this command?"):
         do.execute(response["commands"])
 
 
