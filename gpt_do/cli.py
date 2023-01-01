@@ -53,6 +53,7 @@ def do(request: str, debug: bool, yes: bool, model: str):
         return
     click.echo(click.style("\n".join(response["commands"]), fg="green"))
     if yes or confirm("Execute this command?"):
+        click.echo("")
         do.execute(response["commands"])
 
 
