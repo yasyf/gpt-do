@@ -1,8 +1,8 @@
-from gpt_do.doers.doer import Doer
+from gpt_do.doers.chatgpt_doer import ChatGPTDoer
 from gpt_do.vendor.chatgpt_wrapper.chatgpt_wrapper import ChatGPT
 
 
-class PywrightDoer(Doer):
+class PywrightDoer(ChatGPTDoer):
     def load_bot(self):
         bot = ChatGPT(headless=not self.debug)
         bot.conversation_id = self.state.get("conversation_id")
@@ -10,10 +10,6 @@ class PywrightDoer(Doer):
         return bot
 
     def prime_convo(self):
-        self.prompt += (
-            "\nYou do not need to execute the commands, only print them."
-            + " Does that make sense? Respond 'yes' if so."
-        )
         self.dprint(self.prompt)
 
         if self.state:

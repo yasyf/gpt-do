@@ -11,7 +11,7 @@ from contextlib import contextmanager
 from functools import cached_property, lru_cache
 from pathlib import Path
 from textwrap import dedent
-from typing import Any, Literal, Optional, Union, overload
+from typing import Any, List, Literal, Optional, Union, overload
 
 import click
 import dirtyjson
@@ -295,11 +295,12 @@ class Doer(ABC):
             raise click.ClickException("OpenAI is not currently accessible.")
 
     @contextmanager
-    def executable(self):
-        f = tempfile.NamedTemporaryFile(
-            mode="w+t", suffix=f".{self.shell}", delete=False
-        )
-        f.write(f"#!{self.shell_path} -l\n")
+    def executable(self, bin: List[str] = []):
+        if not bin:
+            bin = [self.shell_path, "-l"]
+
+        f = tempfile.NamedTemporaryFile(mode="w+t", suffix=f".{bin[0]}", delete=False)
+        f.write(f"#!{' '.join(bin)}\n")
         yield f
         f.flush()
         os.chmod(f.name, os.stat(f.name).st_mode | stat.S_IEXEC)
@@ -307,7 +308,9 @@ class Doer(ABC):
     def execute(self, resp: dict) -> None:
         with self.executable() as f:
             f.write("\n".join(resp["commands"]))
+        return self._execute(f, resp)
 
+    def _execute(self, f, resp):
         if script_path := shutil.which("script"):
             with self.executable() as f2:
                 f2.write(
