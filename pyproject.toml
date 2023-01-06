@@ -24,6 +24,7 @@ black = "==22.*,>=22.12.0"
 do = 'gpt_do.cli:do'
 ddo = 'gpt_do.cli:do'
 gpt-do = 'gpt_do.cli:do'
+derr = 'gpt_do.cli:derr'
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
