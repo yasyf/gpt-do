@@ -1,3 +1,4 @@
+import re
 import shutil
 
 import click
@@ -23,6 +24,9 @@ def derr(debug: bool, yes: bool, model: str, bin: str, code: int):
     if missing := next(filter(lambda x: not shutil.which(x), set(bins)), None):
         message = f"That failed because `{missing}` could not be found."
         request = f"`{missing}` is not installed. Try without using `{missing}`."
+    elif error and (match := re.search(r"No module named '(.*)'", error)):
+        module = match.group(1)
+        message = f"That failed because `{module}` could not be found."
     elif error:
         message = f"That failed with error '{error}' ({code})."
         request = f"That failed with error code {code}. Try another way."
