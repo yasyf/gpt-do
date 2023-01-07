@@ -16,8 +16,10 @@ from typing import Any, List, Literal, Optional, Union, overload
 import click
 import dirtyjson
 
+from gpt_do.common import Common
 
-class Doer(ABC):
+
+class Doer(ABC, Common):
     PROMPT = dedent(
         """
         You are going to translate a natural language description to a series of commands for the {shell} shell.
@@ -192,10 +194,6 @@ class Doer(ABC):
             history="\n".join(self.history()),
             cwd=os.getcwd(),
         )
-
-    def dprint(self, *args):
-        if self.debug:
-            print(*args, file=sys.stderr)
 
     @abstractmethod
     def load_bot(self) -> Any:
