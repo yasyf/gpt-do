@@ -19,28 +19,34 @@ def confirm(prompt):
     return True
 
 
-def standard_args(fn):
-    @click.option("--debug/--no-debug", is_flag=True)
-    @click.option(
-        "--yes/--no", "-y/-n", is_flag=True, help="Do not ask for confirmation"
-    )
-    @click.option(
-        "--model",
-        default="gpt3",
-        type=click.Choice(
-            ["gpt3", "codex", "chatgpt"],
-            case_sensitive=False,
-        ),
-    )
-    @wraps(fn)
-    def wrapped(*args, **kwargs):
-        for param in ("debug", "yes", "model"):
-            os.environ[f"GPT_DO_{param.upper()}"] = str(
-                click.get_current_context().params[param]
-            )
-        return fn(*args, **kwargs)
+def make_standard_args(default_model="gpt3"):
+    def _standard_args(fn):
+        @click.option("--debug/--no-debug", is_flag=True)
+        @click.option(
+            "--yes/--no", "-y/-n", is_flag=True, help="Do not ask for confirmation"
+        )
+        @click.option(
+            "--model",
+            default=default_model,
+            type=click.Choice(
+                ["gpt3", "codex", "chatgpt"],
+                case_sensitive=False,
+            ),
+        )
+        @wraps(fn)
+        def wrapped(*args, **kwargs):
+            for param in ("debug", "yes", "model"):
+                os.environ[f"GPT_DO_{param.upper()}"] = str(
+                    click.get_current_context().params[param]
+                )
+            return fn(*args, **kwargs)
 
-    return wrapped
+        return wrapped
+
+    return _standard_args
+
+
+standard_args = make_standard_args()
 
 
 def get_doer(model):
