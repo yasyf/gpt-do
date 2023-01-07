@@ -589,6 +589,21 @@ files = [
 ]
 
 [[package]]
+name = "sqlvalidator"
+version = "0.0.20"
+description = "SQL queries formatting, syntactic and semantic validation"
+category = "main"
+optional = false
+python-versions = "*"
+files = [
+    {file = "sqlvalidator-0.0.20-py3-none-any.whl", hash = "sha256:8820752d9ec5ccb9cc977099edf991f0090acf4f1e4beb0f2fb35a6e1cc03c89"},
+    {file = "sqlvalidator-0.0.20.tar.gz", hash = "sha256:6f399be1bf0ba54a17ad16f6818836c169d17c16306f4cfa6fc883f13b1705fc"},
+]
+
+[package.extras]
+test = ["pytest (==7.2.0)"]
+
+[[package]]
 name = "tabulate"
 version = "0.9.0"
 description = "Pretty-print tabular data"
@@ -668,4 +683,4 @@ socks = ["PySocks (>=1.5.6,!=1.5.7,<2.0)"]
 [metadata]
 lock-version = "2.0"
 python-versions = "==3.*,>=3.9.0"
-content-hash = "311d29b38ea23b83b3d1c7f6798613fe4d759e476a9e94f3faee5c212242ea38"
+content-hash = "18de31ce55889ecab450475945325ba1180038e206759c0101989d2102b88756"

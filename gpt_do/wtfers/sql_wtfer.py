@@ -6,6 +6,7 @@ from typing import Optional
 
 import openai
 import sqlparse
+import sqlvalidator
 from retry import retry
 from tabulate import tabulate
 
@@ -83,18 +84,26 @@ class Sample:
         if any(t.match(sqlparse.tokens.Keyword, ["LIMIT"]) for t in statement):
             return statement
 
+        tokens = statement.tokens.copy()
+
         try:
             index = statement.token_index(
                 sqlparse.sql.Token(sqlparse.tokens.Punctuation, ";")
             )
         except ValueError:
             index = -1
+
         statement.tokens[index:index] = [
             sqlparse.sql.Token(sqlparse.tokens.Whitespace, " "),
             sqlparse.sql.Token(sqlparse.tokens.Keyword, "LIMIT"),
             sqlparse.sql.Token(sqlparse.tokens.Whitespace, " "),
             sqlparse.sql.Token(sqlparse.tokens.Number, n),
+            sqlparse.sql.Token(sqlparse.tokens.Whitespace, " "),
         ]
+
+        if not sqlvalidator.parse(str(statement)).is_valid():
+            statement.tokens = tokens
+
         return statement
 
     def _relax_limit(self, statement: sqlparse.sql.Statement):
@@ -148,7 +157,10 @@ class Sample:
         )
 
         if not (select or pragma):
-            return []
+            return None
+
+        if select and not (parsed := sqlvalidator.parse(str(statement))).is_valid():
+            return parsed.errors[0]
 
         return self.execute(
             curr,
@@ -168,18 +180,24 @@ class Sample:
 
     @classmethod
     def parse(cls, raw: str):
-        if match := re.search(r"REASON: (?P<reason>.*)", raw):
-            reason = match.group("reason").strip()
+        if reason_match := re.search(r"REASON: (?P<reason>.*)", raw):
+            reason = reason_match.group("reason").strip()
         else:
             reason = ""
 
-        if match := re.search(r"FINAL: (?P<final>True|False)", raw):
-            final = match.group("final").lower() == "true"
+        if final_match := re.search(r"FINAL: (?P<final>True|False)", raw):
+            final = final_match.group("final").lower() == "true"
         else:
-            final = not reason
+            final = True if not reason_match else False
 
-        if match := re.search(r"START-QUERY(?P<query>.*)END-QUERY", raw, re.DOTALL):
-            query = match.group("query").strip()
+        if query_match := re.search(
+            r"START-QUERY(?P<query>.*)END-QUERY", raw, re.DOTALL
+        ):
+            query = query_match.group("query").strip()
+        elif not reason_match and not final_match:
+            query = raw.strip().removeprefix("FINAL:").removesuffix("END-QUERY")
+            if not sqlvalidator.parse(query).is_valid():
+                query = ""
         else:
             query = ""
 
@@ -270,7 +288,7 @@ class SQLWTFer(WTFer):
         penalties = {"frequency_penalty": 0.5}
 
         if (errors := self.errors()) == 1:
-            penalties = {"frequency_penalty": 2.0, "presence_penalty": 0.5}
+            penalties = {"frequency_penalty": 1.5, "presence_penalty": 0.5}
         elif errors > 1:
             self.dprint("Too many errors, switching models")
             self.model = self.next_model()
@@ -323,6 +341,11 @@ class SQLWTFer(WTFer):
         self.dprint(sample)
 
         if sample.final:
-            raise StopIteration()
+            sample.populate(self.curr)
+            if sample.errored:
+                sample.final = False
+                return sample
+            else:
+                raise StopIteration()
         else:
             return sample
