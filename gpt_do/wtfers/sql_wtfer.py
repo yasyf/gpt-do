@@ -286,6 +286,10 @@ class SQLWTFer(WTFer):
                 request_timeout=10,
                 **penalties,
             )
+        except openai.error.RateLimitError as e:
+            self.dprint("Error:", e)
+            self.model = self.next_model()
+            raise
         except openai.error.APIError as e:
             self.dprint("Error:", e)
             if "maximum context length" in str(e):
