@@ -9,17 +9,6 @@ class PywrightDoer(ChatGPTDoer):
         bot.parent_message_id = self.state.get("parent_message_id")
         return bot
 
-    def prime_convo(self):
-        self.dprint(self.prompt)
-
-        if self.state:
-            return
-
-        response = self.ask(self.prompt).lower()
-        self.dprint(response)
-
-        assert "yes" in response
-
     def _ask(self, prompt: str) -> str:
         return self.bot.ask(prompt)
 

@@ -33,11 +33,28 @@ class ChatGPTDoer(Doer):
         My current working directory is: {cwd}
         Here is some recent shell history:
         {history}
+
+        Do you understand the instructions?
     """
     )
 
-    def ask(self, *args, **kwargs):
-        raw = super().ask(*args, **kwargs)
+    def prime_convo(self):
+        state = self.state.copy()
+        state.pop("cache")
+
+        if any(state.values()):
+            self.dprint("Using existing state: {}".format(state))
+            return
+
+        self.dprint(self.prompt)
+        response = self._ask(self.prompt).lower()
+        self.dprint(response)
+
+        assert "yes" in response
+
+    def ask(self, prompt: str, **kwargs) -> str:
+        kwargs.pop("is_json", None)
+        raw = super().ask(prompt, **kwargs)
         json_start, json_end = raw.find("{"), raw.find("}")
         json = raw[json_start : json_end + 1]
 
@@ -53,8 +70,10 @@ class ChatGPTDoer(Doer):
             self.dprint(raw)
             raise click.UsageError("GPT returned an invalid response. Try again?")
 
-        code_start, code_end = raw.find("```", json_end), raw.rfind("```", json_end)
-        resp["code"] = raw[code_start + 3 : code_end]
+        code_start, code_end = raw.find("\n", raw.find("```", json_end)), raw.rfind(
+            "```", json_end
+        )
+        resp["commands"] = [raw[code_start + 1 : code_end]]
 
         return resp
 
@@ -64,6 +83,7 @@ class ChatGPTDoer(Doer):
         else:
             exec_bin = []
 
+        # Pip install requirements if missing
         with self.executable(exec_bin) as f:
-            f.write(resp["code"])
+            f.write(resp["commands"][0])
         return self._execute(f, resp)

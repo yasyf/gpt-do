@@ -45,9 +45,9 @@ def standard_args(fn):
 
 def get_doer(model):
     if model == "chatgpt":
-        from gpt_do.doers.pywright_doer import PywrightDoer
+        from gpt_do.doers.rev_chatgpt_doer import RevChatGPTDoer
 
-        return PywrightDoer
+        return RevChatGPTDoer
     elif model == "gpt3":
         from gpt_do.doers.gpt3_doer import GPT3Doer
 

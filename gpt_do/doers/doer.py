@@ -15,7 +15,6 @@ from typing import Any, List, Literal, Optional, Union, overload
 
 import click
 import dirtyjson
-from retry import retry
 
 
 class Doer(ABC):
@@ -59,7 +58,7 @@ class Doer(ABC):
         self.bot = self.load_bot()
         self._errored = False
 
-        self.prime_convo()
+        self._primed = False
 
     @cached_property
     def _session_id(self):
@@ -236,6 +235,11 @@ class Doer(ABC):
     def save_state(self):
         json.dump(self.state, self.state_path.open("w"))
 
+    def prime_if_needed(self):
+        if not self._primed:
+            self._primed = True
+            self.prime_convo()
+
     @overload
     def ask(self, prompt: str) -> str:
         ...
@@ -272,9 +276,9 @@ class Doer(ABC):
         cache = self.state["cache"] = self.state.get("cache", {})
         cache[self.key_from_query(query)] = value
 
-    @retry(tries=3, delay=0.5)
     def _query(self, query) -> dict:
         if self.has_dynamic_history or not (resp := self.check_cache(query)):
+            self.prime_if_needed()
             resp = self.ask(query, is_json=True)
             self.update_cache(query, resp)
             self.save_state()
@@ -286,12 +290,14 @@ class Doer(ABC):
         if not self._errored:
             try:
                 return self._query(query)
-            except:
+            except Exception as e:
+                self.dprint(e)
                 self._errored = True
 
         try:
             return self._query(query)
-        except:
+        except Exception as e:
+            self.dprint(e)
             raise click.ClickException("OpenAI is not currently accessible.")
 
     @contextmanager
@@ -299,7 +305,9 @@ class Doer(ABC):
         if not bin:
             bin = [self.shell_path, "-l"]
 
-        f = tempfile.NamedTemporaryFile(mode="w+t", suffix=f".{bin[0]}", delete=False)
+        f = tempfile.NamedTemporaryFile(
+            mode="w+t", suffix=f".{Path(bin[0]).stem}", delete=False
+        )
         f.write(f"#!{' '.join(bin)}\n")
         yield f
         f.flush()
