@@ -79,7 +79,7 @@ class Sample:
             """
         )
 
-    def _apply_limit(self, statement: sqlparse.sql.Statement):
+    def _apply_limit(self, statement: sqlparse.sql.Statement, n=MAX_RESULTS):
         if any(t.match(sqlparse.tokens.Keyword, ["LIMIT"]) for t in statement):
             return statement
 
@@ -93,18 +93,20 @@ class Sample:
             sqlparse.sql.Token(sqlparse.tokens.Whitespace, " "),
             sqlparse.sql.Token(sqlparse.tokens.Keyword, "LIMIT"),
             sqlparse.sql.Token(sqlparse.tokens.Whitespace, " "),
-            sqlparse.sql.Token(sqlparse.tokens.Number, self.MAX_RESULTS),
+            sqlparse.sql.Token(sqlparse.tokens.Number, n),
         ]
         return statement
 
     def _relax_limit(self, statement: sqlparse.sql.Statement):
         if limit := next(
-            (t.match(sqlparse.tokens.Keyword, ["LIMIT"]) for t in statement), None
+            (t for t in statement if t.match(sqlparse.tokens.Keyword, ["LIMIT"])), None
         ):
             _, n = statement.token_next(statement.token_index(limit))
-            n.value = "100"
-
-        return statement
+            if n.value != "1":
+                n.value = "100"
+            return statement
+        else:
+            return self._apply_limit(statement, n=100)
 
     def _execute(self, curr: sqlite3.Cursor, statement: sqlparse.sql.Statement):
         self.query = str(statement)
@@ -157,7 +159,7 @@ class Sample:
     def populate(self, curr: sqlite3.Cursor):
         if not self.query:
             return
-        statements = sqlparse.parse(self.query)
+        statements = sqlparse.parse(self.original_query if self.final else self.query)
         results = filter(
             None,
             [self.execute_and_format(curr, statement) for statement in statements],

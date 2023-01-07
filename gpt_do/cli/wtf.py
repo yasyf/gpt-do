@@ -22,7 +22,7 @@ def sql(request: list[str], db: str, debug: bool, yes: bool, model: str):
         if not yes and sql.query and not confirm("Execute?"):
             return
         click.echo("")
-    click.echo(click.style(wtfer.result.query, fg="green", bold=True))
+    click.echo(click.style(wtfer.result.original_query, fg="green", bold=True))
     if confirm("Execute?"):
         click.echo(click.style(wtfer.execute(), bold=True))
 
