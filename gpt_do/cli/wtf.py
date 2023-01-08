@@ -12,8 +12,11 @@ def wtf():
 @wtf.command()
 @click.argument("request", nargs=-1)
 @click.option("--db", type=click.Path(exists=True, resolve_path=True), required=True)
+@click.option("--query-only", default=False, is_flag=True)
 @standard_args
-def sql(request: list[str], db: str, debug: bool, yes: bool, model: str):
+def sql(
+    request: list[str], db: str, query_only: bool, debug: bool, yes: bool, model: str
+):
     model = {"gpt3": "text-davinci-003", "codex": "code-davinci-002"}.get(model, model)
     wtfer = SQLWTFer(db, " ".join(request), debug=debug, model=model)
     for sql in wtfer:
@@ -22,9 +25,13 @@ def sql(request: list[str], db: str, debug: bool, yes: bool, model: str):
         if not yes and sql.query and not confirm("Execute?"):
             return
         click.echo("")
+
     click.echo(click.style(wtfer.result.original_query, fg="green", bold=True))
+
     if confirm("Execute?"):
-        click.echo(click.style(wtfer.execute(), bold=True))
+        click.echo(click.style(wtfer.execute()))
+    if not query_only:
+        click.echo(click.style(wtfer.answer(), bold=True))
 
 
 if __name__ == "__main__":

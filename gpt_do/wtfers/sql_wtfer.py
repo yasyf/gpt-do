@@ -14,10 +14,10 @@ from gpt_do.wtfers.wtfer import WTFer
 
 
 def dedent(text: str) -> str:
-    return "\n".join(map(str.strip, text.splitlines()))
+    return "\n".join(map(str.strip, text.splitlines())).strip()
 
 
-def truncate(content: str, length=1000, suffix="\n(truncated)"):
+def truncate(content: str, length=300, suffix="\n(truncated)"):
     if len(content) <= length:
         return content
     else:
@@ -25,7 +25,11 @@ def truncate(content: str, length=1000, suffix="\n(truncated)"):
             idx = content.index("\n", length)
         except:
             idx = -1
-        return content[:idx] + suffix
+        content = content[:idx] + suffix
+        if len(content) < 2 * length:
+            return content
+        else:
+            return suffix
 
 
 def tab(fn):
@@ -35,7 +39,7 @@ def tab(fn):
             return None
         tabulate_args = {
             "headers": "keys",
-            "missingval": "NONE",
+            "missingval": "NULL",
             "maxheadercolwidths": 30,
         }
         tabulated = tabulate(resp, **tabulate_args, tablefmt="simple")
@@ -64,6 +68,9 @@ class Sample:
 
     def __post_init__(self):
         self.original_query = self.query
+
+    def is_empty(self):
+        return self.query is None and self.reason is None and not self.final
 
     def format(self):
         return dedent(
@@ -112,10 +119,10 @@ class Sample:
         ):
             _, n = statement.token_next(statement.token_index(limit))
             if n.value != "1":
-                n.value = "100"
+                n.value = "25"
             return statement
         else:
-            return self._apply_limit(statement, n=100)
+            return self._apply_limit(statement, n=25)
 
     def _execute(self, curr: sqlite3.Cursor, statement: sqlparse.sql.Statement):
         self.query = str(statement)
@@ -180,15 +187,15 @@ class Sample:
 
     @classmethod
     def parse(cls, raw: str):
-        if reason_match := re.search(r"REASON: (?P<reason>.*)", raw):
+        if final_match := re.search(r"FINAL:\s*(?P<final>True|False)", raw, flags=re.I):
+            final = final_match.group("final").lower() == "true"
+        else:
+            final = False
+
+        if reason_match := re.search(r"REASON:\s*(?P<reason>.*)", raw):
             reason = reason_match.group("reason").strip()
         else:
             reason = ""
-
-        if final_match := re.search(r"FINAL: (?P<final>True|False)", raw):
-            final = final_match.group("final").lower() == "true"
-        else:
-            final = True if not reason_match else False
 
         if query_match := re.search(
             r"START-QUERY(?P<query>.*)END-QUERY", raw, re.DOTALL
@@ -198,6 +205,8 @@ class Sample:
             query = raw.strip().removeprefix("FINAL:").removesuffix("END-QUERY")
             if not sqlvalidator.parse(query).is_valid():
                 query = ""
+            elif not final_match:
+                final = True
         else:
             query = ""
 
@@ -206,18 +215,41 @@ class Sample:
 
 class SQLWTFer(WTFer):
     MODELS = ["code-davinci-002", "text-davinci-003"]
-    PROMPT = dedent(
+    PROMPT_1 = dedent(
         """
-    I have a task to perform on a SQLite database. You must provide a response in SQL.
+    I have a task to perform on a SQLite database.
+
+    The task is: {task}.
+
+    Let's explain how we would solve this problem. Do not write any SQL yet.
+    """
+    )
+    PROMPT_2 = dedent(
+        """
+    I have a task to perform on a SQLite database.
 
     Each time you respond, provide exactly one SQL query which will help you gather more information. I will give the responses of that query back to you.
 
     Do not return the final answer until you are confident. Do not include any information that you did not get from this specific database. Do not provide a response to the query; wait for me to do that.
 
     The task is: {task}.
+
+    Now we will write the SQL, one statement at a time. Try to use as few queries as possible. Always use the following format.
+    """
+    )
+    PROMPT_3 = dedent(
+        """
+    {history}
+
+    So, the answer (in plain terms) to the original question is:
     """
     )
     EXAMPLES = [
+        Sample(
+            False,
+            "I need to know what version of sqlite I am using.",
+            "SELECT sqlite_version();",
+        ),
         Sample(
             False,
             "I need to know what tables exist.",
@@ -240,6 +272,7 @@ class SQLWTFer(WTFer):
         self.conn = sqlite3.connect(db)
         self._init_db()
 
+        self._steps = ""
         self.examples = self.EXAMPLES.copy()
 
     def _init_db(self):
@@ -256,12 +289,21 @@ class SQLWTFer(WTFer):
         ).fetchall()
 
     @property
+    def steps(self):
+        if self.errors():
+            return f"Let's think step by step.\n{self._steps}"
+        else:
+            return ""
+
+    @property
     def prompt(self) -> str:
         samples = "\n".join(map(Sample.format, self.examples))
+        prompt = self.PROMPT_2.format(task=self.task)
         return dedent(
             f"""
-            {self.PROMPT.format(task=self.task)}
+            {prompt}
             {samples}
+            {self.steps}
 
             FINAL:
             """
@@ -296,7 +338,7 @@ class SQLWTFer(WTFer):
                 self.examples.pop()
 
         try:
-            self.dprint("*Query*\n", self.model)
+            self.dprint("*Query*\n", self.model, len(self.prompt))
             return openai.Completion.create(
                 engine=self.model,
                 prompt=self.prompt,
@@ -316,7 +358,43 @@ class SQLWTFer(WTFer):
                 self.examples[-1].response = "(too long)"
             raise
 
+    @retry(tries=3, delay=1, backoff=1.2)
+    def prime(self):
+        steps = (
+            openai.Completion.create(
+                engine=self.model,
+                prompt=self.PROMPT_1.format(task=self.task),
+                temperature=0,
+                max_tokens=256,
+                request_timeout=30,
+            )
+            .choices[0]
+            .text
+        )
+
+        self.dprint("*Steps*\n", steps)
+        self._steps = steps
+
+        for example in self.examples:
+            example.populate(self.curr)
+
+    def answer(self):
+        if not self.result.response:
+            self.execute()
+        return (
+            openai.Completion.create(
+                engine=self.model,
+                prompt=self.PROMPT_3.format(history=self.prompt),
+                temperature=0,
+                max_tokens=256,
+                request_timeout=30,
+            )
+            .choices[0]
+            .text
+        )
+
     def __iter__(self):
+        self.prime()
         self.dprint("*Initial Prompt*\n", self.prompt)
         return self
 
@@ -337,7 +415,8 @@ class SQLWTFer(WTFer):
         except StopIteration as e:
             sample = Sample(False, "", "", f"Error: {e}")
 
-        self.examples.append(sample)
+        if not sample.is_empty():
+            self.examples.append(sample)
         self.dprint(sample)
 
         if sample.final:
