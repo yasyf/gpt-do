@@ -8,7 +8,7 @@ from gpt_do.doers.doer import Doer
 
 
 class GPT3Doer(Doer):
-    model = "text-davinci-003"
+    model = "gpt-3.5-turbo-instruct"
 
     def load_bot(self):
         if not os.getenv("OPENAI_API_KEY"):
