@@ -51,7 +51,7 @@ def get_doer(model):
     elif model == "gpt3":
         from gpt_do.doers.gpt3_doer import GPT3Doer
 
-        GPT3Doer.model = "text-davinci-003"
+        GPT3Doer.model = "gpt-3.5-turbo-instruct"
         return GPT3Doer
     elif model == "codex":
         from gpt_do.doers.gpt3_doer import GPT3Doer
