@@ -22,22 +22,6 @@ $ which do
 ~/.local/bin/do
 ```
 
-However you can also use `brew`:
-
-```console
-$ brew install yasyf/do/do
-$ which do
-/opt/homebrew/bin/do
-```
-
-Or `pip`:
-
-```console
-$ pip install gpt-do
-$ which do
-~/.asdf/installs/python/3.11.0/bin/do
-```
-
 ## Usage
 
 **n.b.** If you're on `bash` or `zsh`, `do` is a reserved keyword, so you'll have to use the alias `ddo`.
