@@ -26,11 +26,9 @@ def standard_args(fn):
     )
     @click.option(
         "--model",
-        default="gpt3",
-        type=click.Choice(
-            ["gpt3", "codex", "chatgpt"],
-            case_sensitive=False,
-        ),
+        default="gpt-5-mini",
+        show_default=True,
+        help="OpenAI model ID to use.",
     )
     @wraps(fn)
     def wrapped(*args, **kwargs):
@@ -43,23 +41,10 @@ def standard_args(fn):
     return wrapped
 
 
-def get_doer(model):
-    if model == "chatgpt":
-        from gpt_do.doers.rev_chatgpt_doer import RevChatGPTDoer
+def get_doer(model, **kwargs):
+    from gpt_do.doers.gpt3_doer import OpenAIDoer
 
-        return RevChatGPTDoer
-    elif model == "gpt3":
-        from gpt_do.doers.gpt3_doer import GPT3Doer
-
-        GPT3Doer.model = "gpt-3.5-turbo-instruct"
-        return GPT3Doer
-    elif model == "codex":
-        from gpt_do.doers.gpt3_doer import GPT3Doer
-
-        GPT3Doer.model = "code-davinci-002"
-        return GPT3Doer
-    else:
-        raise ValueError(f"Unknown model {model}")
+    return OpenAIDoer(model=model, **kwargs)
 
 
 def run_doer(doer: "Doer", request: list[str], yes: bool):

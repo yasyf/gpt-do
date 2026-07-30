@@ -1,8 +1,11 @@
 # `gpt-do`
 
-This is a handy-dandy CLI for when you don't know wtf to do.
+Turn natural-language requests into reviewed shell commands using a current OpenAI
+model and the Responses API.
 
-Instead of furiously grepping through man pages, simply use `do` (or `ddo` if on `bash`/`zsh`), and have GPT-3 do all the magic for you.
+This fork modernizes the original project by replacing retired completion models
+and the pre-1.0 OpenAI SDK. Use `do` (or `ddo` in `bash`/`zsh`) when you do not
+remember the command you need.
 
 Check out the blog post [here](https://musings.yasyf.com/never-write-a-bash-command-again-with-gpt-3/).
 
@@ -14,10 +17,11 @@ Click to play:
 
 ## Installation
 
-We recommend using [`pipx`](https://pypa.github.io/pipx/):
+Install this fork with [`pipx`](https://pipx.pypa.io/):
 
 ```console
-$ pipx install gpt-do
+$ brew uninstall yasyf/do/do # only if the old Homebrew formula is installed
+$ pipx install git+https://github.com/andrew12-forge/gpt-do.git
 $ which do
 ~/.local/bin/do
 ```
@@ -26,14 +30,15 @@ $ which do
 
 **n.b.** If you're on `bash` or `zsh`, `do` is a reserved keyword, so you'll have to use the alias `ddo`.
 
-**n.b.** The default model used is **GPT-3**. Please ensure you have sufficient credits in your OpenAI account to use it.
+Set `OPENAI_API_KEY` before running the command. The default model is
+`gpt-5-mini`; pass any supported Responses API model with `--model`.
 
 ```console
-$ export OPENAI_API_KEY=xxx # stick this in your bash_profile
-$ do amend the message of my last commit to "It works!"
+$ export OPENAI_API_KEY=xxx
+$ ddo --model gpt-5-mini amend the message of my last commit to "It works!"
 This command will amend the message of the last commit to 'It works!'.
 git commit --amend -m 'It works!'
-Do you want to continue? [y/N]: y
+Execute this command? [Y/n]: y
 [main 3e6a2f6] It works!!
  Date: Thu Dec 22 01:15:40 2022 -0800
  5 files changed, 1088 insertions(+)
