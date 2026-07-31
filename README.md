@@ -3,9 +3,8 @@
 Turn natural-language requests into reviewed shell commands using a current OpenAI
 model and the Responses API.
 
-This fork modernizes the original project by replacing retired completion models
-and the pre-1.0 OpenAI SDK. Use `do` (or `ddo` in `bash`/`zsh`) when you do not
-remember the command you need.
+Instead of furiously grepping through man pages, simply use `do` (or `ddo` if on
+`bash`/`zsh`) when you do not remember the command you need.
 
 Check out the blog post [here](https://musings.yasyf.com/never-write-a-bash-command-again-with-gpt-3/).
 
@@ -17,11 +16,10 @@ Click to play:
 
 ## Installation
 
-Install this fork with [`pipx`](https://pipx.pypa.io/):
+We recommend using [`pipx`](https://pipx.pypa.io/):
 
 ```console
-$ brew uninstall yasyf/do/do # only if the old Homebrew formula is installed
-$ pipx install git+https://github.com/andrew12-forge/gpt-do.git
+$ pipx install gpt-do
 $ which do
 ~/.local/bin/do
 ```
