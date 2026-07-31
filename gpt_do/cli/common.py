@@ -42,7 +42,7 @@ def standard_args(fn):
 
 
 def get_doer(model, **kwargs):
-    from gpt_do.doers.gpt3_doer import OpenAIDoer
+    from gpt_do.doers.openai_doer import OpenAIDoer
 
     return OpenAIDoer(model=model, **kwargs)
 

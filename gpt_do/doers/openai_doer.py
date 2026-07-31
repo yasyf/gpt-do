@@ -61,7 +61,3 @@ class OpenAIDoer(Doer):
     def key_from_query(self, query: str) -> str:
         key = super().key_from_query(query)
         return f"{self.model}:{key}"
-
-
-# Preserve imports used by existing integrations.
-GPT3Doer = OpenAIDoer

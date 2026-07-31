@@ -6,7 +6,7 @@ import pytest
 from click.testing import CliRunner
 
 from gpt_do.cli.do import do
-from gpt_do.doers.gpt3_doer import OpenAIDoer
+from gpt_do.doers.openai_doer import OpenAIDoer
 
 
 @pytest.fixture
@@ -23,7 +23,7 @@ def test_uses_responses_api_with_selected_model(monkeypatch, tmp_path, click_con
         output_text='{"commands":["pwd"],"explanation":"Print the working directory."}'
     )
 
-    with patch("gpt_do.doers.gpt3_doer.OpenAI", return_value=client):
+    with patch("gpt_do.doers.openai_doer.OpenAI", return_value=client):
         doer = OpenAIDoer(model="gpt-5-mini")
         doer.__dict__["_history"] = []
         result = doer.ask("show my current directory", is_json=True)
