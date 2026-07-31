@@ -22,7 +22,7 @@ class Doer(ABC):
         """
         You are going to translate a natural language description to a series of commands for the {shell} shell.
 
-        You should respond with a JSON object that has the keys "commands" and "explanation'.
+        You should respond with a JSON object that has the keys "commands" and "explanation".
         "commands" is an array of strings representing shell commands. If the request would require multiple commands, respond with all the required commands in the array.
         "explanation" is a string which at most one sentence, and cannot contain any other commands. The explanation should help the user understand what the commands are going to do.
 
@@ -186,9 +186,11 @@ class Doer(ABC):
         return self.PROMPT.format(
             shell=self.shell,
             uname=repr(list(os.uname())),
-            dangerous="If you are suggesting a destructive command, ensure it is wrapped in a confirmation."
-            if self.dangerous
-            else "",
+            dangerous=(
+                "If you are suggesting a destructive command, ensure it is wrapped in a confirmation."
+                if self.dangerous
+                else ""
+            ),
             history="\n".join(self.history()),
             cwd=os.getcwd(),
         )
@@ -198,16 +200,13 @@ class Doer(ABC):
             print(*args, file=sys.stderr)
 
     @abstractmethod
-    def load_bot(self) -> Any:
-        ...
+    def load_bot(self) -> Any: ...
 
     @abstractmethod
-    def _ask(self, prompt: str) -> str:
-        ...
+    def _ask(self, prompt: str) -> str: ...
 
     @abstractmethod
-    def prime_convo(self):
-        ...
+    def prime_convo(self): ...
 
     @cached_property
     def cache_path(self) -> Path:
@@ -241,12 +240,10 @@ class Doer(ABC):
             self.prime_convo()
 
     @overload
-    def ask(self, prompt: str) -> str:
-        ...
+    def ask(self, prompt: str) -> str: ...
 
     @overload
-    def ask(self, prompt: str, is_json: Literal[True]) -> dict:
-        ...
+    def ask(self, prompt: str, is_json: Literal[True]) -> dict: ...
 
     def ask(self, prompt: str, is_json: bool = False) -> Union[str, dict]:
         resp = self._ask(prompt)
@@ -287,18 +284,13 @@ class Doer(ABC):
         return resp
 
     def query(self, query) -> dict:
-        if not self._errored:
-            try:
-                return self._query(query)
-            except Exception as e:
-                self.dprint(e)
-                self._errored = True
-
         try:
             return self._query(query)
+        except click.ClickException:
+            raise
         except Exception as e:
             self.dprint(e)
-            raise click.ClickException("OpenAI is not currently accessible.")
+            raise click.ClickException(f"OpenAI request failed: {e}") from e
 
     @contextmanager
     def executable(self, bin: List[str] = []):

@@ -14,7 +14,7 @@ from gpt_do.cli.do import do
 def derr(debug: bool, yes: bool, model: str, bin: str, code: int):
     """Retries a failed command."""
     with click.Context(do, info_name=bin):
-        doer = get_doer(model)(debug=debug, dangerous=yes)
+        doer = get_doer(model, debug=debug, dangerous=yes)
         query, commands, error = doer.last_command()
 
     if not query:

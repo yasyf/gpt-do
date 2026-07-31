@@ -1,0 +1,26 @@
+name: Test
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.9", "3.13"]
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+      - name: Install Poetry
+        run: pip install poetry
+      - name: Install dependencies
+        run: poetry install
+      - name: Check formatting
+        run: poetry run black --check gpt_do tests
+      - name: Run tests
+        run: poetry run pytest

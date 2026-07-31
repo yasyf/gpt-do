@@ -11,14 +11,14 @@ jobs:
     runs-on: macos-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v6
         with:
           submodules: true
 
-      - name: Set up Python 3.9
-        uses: actions/setup-python@v4
+      - name: Set up Python
+        uses: actions/setup-python@v6
         with:
-          python-version: "3.9"
+          python-version: "3.11"
 
       - name: Install Poetry
         run: pip install poetry
@@ -41,8 +41,3 @@ jobs:
           token: ${{ github.token }}
           draft: false
           prerelease: steps.check-version.outputs.prerelease == 'true'
-
-      - name: Publish to PyPI
-        env:
-          POETRY_PYPI_TOKEN_PYPI: ${{ secrets.PYPI_TOKEN }}
-        run: poetry publish
